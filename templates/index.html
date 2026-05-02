@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vertical Farm RL</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav class="navbar">
+  <div class="nav-logo">VertiFarm RL</div>
+  <ul class="nav-links">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#simulation">Simulation</a></li>
+    <li><a href="#charts">Charts</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <div class="nav-controls">
+    <button class="btn-start" onclick="startSim()">▶ Start</button>
+    <button class="btn-stop"  onclick="stopSim()">⏹ Stop</button>
+    <button class="btn-reset" onclick="resetSim()">↺ Reset</button>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Research Project</div>
+    <h1 class="hero-title">
+      Multi-Agent RL for<br/>
+      <span class="highlight">Vertical Farm</span><br/>
+      Microclimate Control
+    </h1>
+    <p class="hero-sub">
+      Per-tier microclimate control using Proximal Policy
+      Optimisation with biologically meaningful phenotyping rewards —
+      LAI growth and chlorophyll stress indicators.
+    </p>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-val">3</div>
+        <div class="stat-lbl">Independent<br/>PPO Agents</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <div class="stat-val">LAI</div>
+        <div class="stat-lbl">Phenotyping<br/>Reward Signal</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <div class="stat-val">GreenLight</div>
+        <div class="stat-lbl">Simulation<br/>Environment</div>
+      </div>
+    </div>
+    <a href="#simulation" class="btn-hero">View Live Simulation ↓</a>
+  </div>
+  <div class="hero-visual">
+    <canvas id="heroFarm" width="420" height="380"></canvas>
+  </div>
+</section>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<section class="how-it-works">
+  <h2 class="section-title">How It Works</h2>
+  <p class="section-sub">
+    Three independent agents learn to control their own shelf tier
+    using continuous plant health signals
+  </p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">👁️</div>
+      <h3>Observe</h3>
+      <p>Each agent observes its own tier's temperature, CO₂,
+         humidity, light intensity, and crop state every timestep.</p>
+    </div>
+    <div class="card-arrow">→</div>
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <h3>Decide</h3>
+      <p>The PPO neural network processes observations and outputs
+         6 continuous control actions — LED, heating, ventilation,
+         and nutrient settings.</p>
+    </div>
+    <div class="card-arrow">→</div>
+    <div class="card">
+      <div class="card-icon">🌱</div>
+      <h3>Reward</h3>
+      <p>Agents are rewarded for LAI growth and penalised for
+         plant stress and energy waste — a phenotyping-based
+         biological reward signal.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SIMULATION ═══════════════ -->
+<section class="simulation" id="simulation">
+  <h2 class="section-title">Live Farm Simulation</h2>
+  <p class="section-sub">
+    Watch 3 independent PPO agents control each shelf tier in real time
+  </p>
+
+  <div class="sim-status-bar">
+    <span id="simStatus" class="status-waiting">● WAITING</span>
+    <span>Steps: <b id="stepCount">0</b></span>
+    <span>Agents: <b>3 PPO</b></span>
+    <span>Algorithm: <b>Proximal Policy Optimisation</b></span>
+  </div>
+
+  <!-- Farm Visual -->
+  <div class="farm-container">
+    <div class="farm-rack">
+
+      <!-- TOP TIER -->
+      <div class="tier tier-top">
+        <div class="tier-label">
+          <span class="tier-dot red"></span> Top Tier
+          <span class="tier-badge" id="top-health">🟢 Healthy</span>
+        </div>
+        <div class="tier-shelf">
+          <div class="led-strip"></div>
+          <div class="plants" id="plants-top"></div>
+        </div>
+        <div class="tier-metrics">
+          <div class="tm"><span id="top-lai">0.000</span><br/><small>LAI</small></div>
+          <div class="tm"><span id="top-temp">20.0</span>°C<br/><small>Temp</small></div>
+          <div class="tm"><span id="top-co2">800</span><br/><small>CO₂ ppm</small></div>
+          <div class="tm"><span id="top-hum">80</span>%<br/><small>Humidity</small></div>
+          <div class="tm reward-val"><span id="top-reward">0.000</span><br/><small>Reward</small></div>
+        </div>
+      </div>
+
+      <!-- MIDDLE TIER -->
+      <div class="tier tier-mid">
+        <div class="tier-label">
+          <span class="tier-dot green"></span> Middle Tier
+          <span class="tier-badge" id="mid-health">🟢 Healthy</span>
+        </div>
+        <div class="tier-shelf">
+          <div class="led-strip"></div>
+          <div class="plants" id="plants-mid"></div>
+        </div>
+        <div class="tier-metrics">
+          <div class="tm"><span id="mid-lai">0.000</span><br/><small>LAI</small></div>
+          <div class="tm"><span id="mid-temp">20.0</span>°C<br/><small>Temp</small></div>
+          <div class="tm"><span id="mid-co2">800</span><br/><small>CO₂ ppm</small></div>
+          <div class="tm"><span id="mid-hum">80</span>%<br/><small>Humidity</small></div>
+          <div class="tm reward-val"><span id="mid-reward">0.000</span><br/><small>Reward</small></div>
+        </div>
+      </div>
+
+      <!-- BOTTOM TIER -->
+      <div class="tier tier-bot">
+        <div class="tier-label">
+          <span class="tier-dot blue"></span> Bottom Tier
+          <span class="tier-badge" id="bot-health">🟢 Healthy</span>
+        </div>
+        <div class="tier-shelf">
+          <div class="led-strip"></div>
+          <div class="plants" id="plants-bot"></div>
+        </div>
+        <div class="tier-metrics">
+          <div class="tm"><span id="bot-lai">0.000</span><br/><small>LAI</small></div>
+          <div class="tm"><span id="bot-temp">20.0</span>°C<br/><small>Temp</small></div>
+          <div class="tm"><span id="bot-co2">800</span><br/><small>CO₂ ppm</small></div>
+          <div class="tm"><span id="bot-hum">80</span>%<br/><small>Humidity</small></div>
+          <div class="tm reward-val"><span id="bot-reward">0.000</span><br/><small>Reward</small></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CHARTS ═══════════════ -->
+<section class="charts-section" id="charts">
+  <h2 class="section-title">Live Performance Charts</h2>
+  <p class="section-sub">
+    Real-time metrics updating every step across all 3 tiers
+  </p>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>🌿 Leaf Area Index (LAI)</h3>
+      <canvas id="laiChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>🌡️ Temperature (°C)</h3>
+      <canvas id="tempChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>⭐ Reward per Step</h3>
+      <canvas id="rewardChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>⚠️ Plant Stress Score</h3>
+      <canvas id="stressChart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<section class="about" id="about">
+  <div class="about-grid">
+    <div class="about-left">
+      <h2 class="section-title" style="text-align:left">
+        About This Project
+      </h2>
+      <p>
+        Traditional vertical farms use <strong>static rule-based
+        controllers</strong> that treat the entire farm as one uniform
+        zone, ignoring microclimate variations across shelf tiers caused
+        by heat, light, and airflow differences.
+      </p>
+      <p>
+        This project proposes a <strong>Multi-Agent Reinforcement
+        Learning</strong> framework where each shelf tier is managed by
+        an independent PPO agent. The key innovation is
+        <strong>phenotyping-based reward shaping</strong> — using
+        continuous, non-destructive plant metrics like Leaf Area Index
+        and a chlorophyll-based stress indicator.
+      </p>
+      <div class="reward-formula">
+        <div class="formula-title">Phenotyping Reward Formula</div>
+        <div class="formula">
+          R<sub>t</sub> =
+          <span class="f-green">(LAI<sub>t</sub> − LAI<sub>t−1</sub>) × 20</span>
+          − <span class="f-red">S<sub>temp</sub> + S<sub>CO₂</sub> + S<sub>hum</sub></span>
+          − <span class="f-amber">|ū<sub>t</sub>| × 0.05</span>
+        </div>
+        <div class="formula-legend">
+          <span class="f-green">■</span> LAI growth reward &nbsp;
+          <span class="f-red">■</span> Stress penalty &nbsp;
+          <span class="f-amber">■</span> Energy penalty
+        </div>
+      </div>
+    </div>
+    <div class="about-right">
+      <h3>Approach Comparison</h3>
+      <div class="compare-table">
+        <div class="compare-row header">
+          <div>Method</div>
+          <div>Agents</div>
+          <div>Per-Tier</div>
+          <div>Phenotyping</div>
+        </div>
+        <div class="compare-row">
+          <div>🔴 Rule-Based</div>
+          <div>1 fixed</div>
+          <div class="no">✗</div>
+          <div class="no">✗</div>
+        </div>
+        <div class="compare-row">
+          <div>🔵 Single-Agent PPO</div>
+          <div>1</div>
+          <div class="no">✗</div>
+          <div class="yes">✓</div>
+        </div>
+        <div class="compare-row highlight-row">
+          <div>🟢 Multi-Agent PPO</div>
+          <div>3</div>
+          <div class="yes">✓</div>
+          <div class="yes">✓</div>
+        </div>
+      </div>
+      <h3 style="margin-top:32px">Tech Stack</h3>
+      <div class="tech-stack">
+        <div class="tech">Python 3.12</div>
+        <div class="tech">GreenLight-Gym</div>
+        <div class="tech">Stable-Baselines3</div>
+        <div class="tech">PPO Algorithm</div>
+        <div class="tech">Flask</div>
+        <div class="tech">Chart.js</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+  <div>🌱 Vertical Farm Multi-Agent RL &nbsp;|&nbsp;
+       Built with GreenLight-Gym + Stable-Baselines3
+  </div>
+</footer>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>

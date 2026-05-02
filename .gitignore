@@ -1,0 +1,16 @@
+# Virtual Environment
+farm_env/
+
+# Machine Learning Models (Large files)
+models/*.zip
+
+# Experiment Results
+results/*.png
+
+# Python build and metadata
+__pycache__/
+*.py[cod]
+gl_gym.egg-info/
+
+# Local configuration
+.env
